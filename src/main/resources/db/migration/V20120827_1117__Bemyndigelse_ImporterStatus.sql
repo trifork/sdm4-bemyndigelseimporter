@@ -5,4 +5,4 @@ CREATE TABLE bemyndigelseimporterImportStatus (
     Outcome VARCHAR(20),
 
     INDEX (StartTime)
-);
+) ENGINE=InnoDB COLLATE=utf8_bin;
