@@ -25,7 +25,8 @@
 package dk.nsi.sdm4.bemyndigelse.recordspecs;
 
 import dk.nsi.sdm4.core.persistence.recordpersister.RecordSpecification;
-import static dk.nsi.sdm4.core.persistence.recordpersister.RecordSpecification.field;
+
+import static dk.nsi.sdm4.core.persistence.recordpersister.FieldSpecification.field;
 
 public final class BemyndigelseRecordSpecs
 {
