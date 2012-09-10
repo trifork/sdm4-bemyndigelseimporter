@@ -6,7 +6,7 @@ import org.junit.Test;
 public class BemyndigelseimporterIsUpIT {
 	@Test
 	public void statusPageReturns200OK() throws Exception {
-		new StatuspageChecker().assertThatStatuspageReturns200OK("bemyndigelseimporter");
+		new StatuspageChecker("bemyndigelseimporter").assertThatStatuspageReturns200OK();
 	}
 
 }
