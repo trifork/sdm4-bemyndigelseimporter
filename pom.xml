@@ -9,7 +9,7 @@
 
 	<artifactId>bemyndigelseimporter</artifactId>
 	<packaging>war</packaging>
-	<version>4.1-SNAPSHOT</version>
+	<version>4.1</version>
 
    <distributionManagement>
         <repository>
@@ -37,7 +37,8 @@
         <url>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter</url>
         <connection>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter.git</connection>
         <developerConnection>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter.git</developerConnection>
-    </scm>
+      <tag>bemyndigelseimporter-4.1</tag>
+  </scm>
     <issueManagement>
         <system>JIRA</system>
         <url>https://jira.trifork.com/</url>
