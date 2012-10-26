@@ -1,4 +1,4 @@
-CREATE TABLE `Bemyndigelse` (
+ CREATE TABLE IF NOT EXISTS `Bemyndigelse` (
    BemyndigelsePID BIGINT(20) AUTO_INCREMENT NOT NULL PRIMARY KEY,
     
   `kode` VARCHAR(100) NOT NULL,
