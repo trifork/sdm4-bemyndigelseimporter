@@ -1,0 +1,1 @@
+alter table Bemyndigelse change column BemyndigelsePID PID BIGINT(20) AUTO_INCREMENT NOT NULL;
