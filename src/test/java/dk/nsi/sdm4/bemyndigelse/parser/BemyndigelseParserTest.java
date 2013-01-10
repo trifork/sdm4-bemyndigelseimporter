@@ -27,8 +27,10 @@
 package dk.nsi.sdm4.bemyndigelse.parser;
 
 import dk.nsi.sdm4.bemyndigelse.config.BemyndigelseApplicationConfig;
+import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelse;
 import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelser;
 import dk.nsi.sdm4.bemyndigelse.recordspecs.BemyndigelseRecordSpecs;
+import dk.nsi.sdm4.core.parser.ParserException;
 import dk.nsi.sdm4.testutils.TestDbConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +47,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -98,4 +104,54 @@ public class BemyndigelseParserTest {
         assertEquals("3 bemyndigelser expected",3, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
 
+    @Test
+    public void testNSPSupport150() {
+        File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/nspsupport150/20121130_140213497_v00001.bemyndigelse.xml"));
+
+        parser.process(file);
+        
+        assertEquals("10 bemyndigelser expected",10, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
+        
+        List<Bemyndigelse> bemyndigelser = jdbcTemplate.query("select * from Bemyndigelse where kode = 'eca4d648-a7d6-41b7-bc8e-0ad01c42c780'", new RowMapper<Bemyndigelse>() {
+
+			@Override
+			public Bemyndigelse mapRow(ResultSet rs, int rowNumber)
+					throws SQLException {
+				
+				Bemyndigelse b = new Bemyndigelse();
+				
+				b.setKode(rs.getString("kode"));
+				b.setBemyndigedeCPR(rs.getString("bemyndigede_cpr"));
+				
+				return b;
+			}});
+        
+        assertEquals(1, bemyndigelser.size());
+        assertEquals("eca4d648-a7d6-41b7-bc8e-0ad01c42c780", bemyndigelser.get(0).getKode());
+        assertEquals("1003244314", bemyndigelser.get(0).getBemyndigedeCPR());
+    }
+
+    @Test
+    public void testParseDataWithInvalidKode() {
+    	
+        File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/invalidKode/"));
+    	try {
+            parser.process(file);
+    	} catch(ParserException e) {
+    		NullPointerException ne = (NullPointerException)e.getCause();
+    		assertEquals("Bemyndigelse.kode cannot be null", ne.getMessage());
+    	}
+    }
+
+    @Test
+    public void testParseDataWithInvalidArbejdsfunktion() {
+    	
+        File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/invalidArbejdsfunktion/"));
+    	try {
+            parser.process(file);
+    	} catch(ParserException e) {
+    		NullPointerException ne = (NullPointerException)e.getCause();
+    		assertEquals("Bemyndigelse.arbejdsfunktion cannot be null where kode = 1", ne.getMessage());
+    	}
+    }
 }

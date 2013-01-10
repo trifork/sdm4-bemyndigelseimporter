@@ -79,6 +79,7 @@ public class BemyndigelseParser implements Parser {
             List<Bemyndigelser> bemyndigelsesList = unmarshallFile(files);
             for (Bemyndigelser bemyndigelser : bemyndigelsesList) {
                 for(Bemyndigelse bemyndigelse: bemyndigelser.getBemyndigelseList()) {
+                	validateBemyndigelse(bemyndigelse);
                     Record record = buildRecord(bemyndigelse);
                     persister.persist(record, recordSpecification);
                 }
@@ -95,7 +96,17 @@ public class BemyndigelseParser implements Parser {
         
     }
     
-    private Record buildRecord(Bemyndigelse bemyndigelse) {
+    private void validateBemyndigelse(Bemyndigelse bemyndigelse) {
+        Preconditions.checkNotNull(bemyndigelse.getKode(), "Bemyndigelse.kode cannot be null");
+        Preconditions.checkNotNull(bemyndigelse.getBemyndigedeCPR(), "Bemyndigelse.bemyndigede_cpr cannot be null where kode = " + bemyndigelse.getKode());
+        Preconditions.checkNotNull(bemyndigelse.getBemyndigendeCPR(), "Bemyndigelse.bemyndigende_cpr cannot be null where kode = " + bemyndigelse.getKode());
+        Preconditions.checkNotNull(bemyndigelse.getSystem(), "Bemyndigelse.system cannot be null where kode = " + bemyndigelse.getKode());
+        Preconditions.checkNotNull(bemyndigelse.getArbejdsfunktion(), "Bemyndigelse.arbejdsfunktion cannot be null where kode = " + bemyndigelse.getKode());
+        Preconditions.checkNotNull(bemyndigelse.getRettighed(), "Bemyndigelse.rettighed cannot be null where kode = " + bemyndigelse.getKode());
+        Preconditions.checkNotNull(bemyndigelse.getStatus(), "Bemyndigelse.status cannot be null where kode = " + bemyndigelse.getKode());
+	}
+
+	private Record buildRecord(Bemyndigelse bemyndigelse) {
         RecordBuilder builder = new RecordBuilder(recordSpecification);
 
         builder.field("kode", bemyndigelse.getKode());
