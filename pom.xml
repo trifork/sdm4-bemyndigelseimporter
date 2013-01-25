@@ -33,12 +33,13 @@
             <name>Trifork Nexus Public Repository</name>
             <url>https://nexus.trifork.com/content/groups/public/</url>
         </pluginRepository>
-    </pluginRepositories>     <scm>
+    </pluginRepositories>
+    <scm>
         <url>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter</url>
         <connection>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter.git</connection>
         <developerConnection>scm:git:git@github.com:trifork/sdm4-bemyndigelseimporter.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <issueManagement>
         <system>JIRA</system>
         <url>https://jira.trifork.com/</url>
