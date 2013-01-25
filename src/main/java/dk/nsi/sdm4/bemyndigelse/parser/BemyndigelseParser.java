@@ -26,48 +26,45 @@
  */
 package dk.nsi.sdm4.bemyndigelse.parser;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import dk.nsi.sdm4.core.persistence.recordpersister.*;
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
-
 import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelse;
 import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelser;
 import dk.nsi.sdm4.bemyndigelse.recordspecs.BemyndigelseRecordSpecs;
 import dk.nsi.sdm4.core.parser.Parser;
 import dk.nsi.sdm4.core.parser.ParserException;
+import dk.nsi.sdm4.core.persistence.recordpersister.*;
 import dk.sdsd.nsp.slalog.api.SLALogItem;
 import dk.sdsd.nsp.slalog.api.SLALogger;
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BemyndigelseParser implements Parser {
 
     private final RecordSpecification recordSpecification;
-    private static Logger logger = Logger.getLogger(BemyndigelseParser.class); 
+    private static Logger logger = Logger.getLogger(BemyndigelseParser.class);
 
     @Autowired
     private SLALogger slaLogger;
-    
+
     @Autowired
     private RecordPersister persister;
 
     @Autowired
-    private RecordFetcher fetcher;
-    
-    
+    private RecordFetcher recordFetcher;
+
+
     public BemyndigelseParser() {
         this.recordSpecification = BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC;
     }
-    
+
     @Override
     public void process(File dataSet) throws ParserException {
 
@@ -75,11 +72,11 @@ public class BemyndigelseParser implements Parser {
         try {
             logger.debug("Starting Bemyndigelse parser");
             File files = checkRequiredFiles(dataSet);
-            
+
             List<Bemyndigelser> bemyndigelsesList = unmarshallFile(files);
             for (Bemyndigelser bemyndigelser : bemyndigelsesList) {
-                for(Bemyndigelse bemyndigelse: bemyndigelser.getBemyndigelseList()) {
-                	validateBemyndigelse(bemyndigelse);
+                for (Bemyndigelse bemyndigelse : bemyndigelser.getBemyndigelseList()) {
+                    validateBemyndigelse(bemyndigelse);
                     Record record = buildRecord(bemyndigelse);
 
                     updateCurrentRecordIfExists(bemyndigelse.getKode(), recordSpecification);
@@ -95,13 +92,13 @@ public class BemyndigelseParser implements Parser {
         } finally {
             logger.debug("Ending Bemyndigelse parser");
         }
-        
+
     }
 
     private void updateCurrentRecordIfExists(String key, RecordSpecification specification) {
-        RecordWithMetadata recordWithMetadata = fetcher.fetchCurrentWithMeta(key, specification);
+        RecordWithMetadata recordWithMetadata = recordFetcher.fetchCurrentWithMeta(key, specification);
         if (recordWithMetadata != null) {
-            logger.debug("Existing record found for key '"+key+"' - setting ValidTo");
+            logger.debug("Existing record found for key '" + key + "' - setting ValidTo");
             recordWithMetadata.setValidTo(persister.getTransactionTime());
             persister.update(recordWithMetadata, specification);
         }
@@ -115,9 +112,9 @@ public class BemyndigelseParser implements Parser {
         Preconditions.checkNotNull(bemyndigelse.getArbejdsfunktion(), "Bemyndigelse.arbejdsfunktion cannot be null where kode = " + bemyndigelse.getKode());
         Preconditions.checkNotNull(bemyndigelse.getRettighed(), "Bemyndigelse.rettighed cannot be null where kode = " + bemyndigelse.getKode());
         Preconditions.checkNotNull(bemyndigelse.getStatus(), "Bemyndigelse.status cannot be null where kode = " + bemyndigelse.getKode());
-	}
+    }
 
-	private Record buildRecord(Bemyndigelse bemyndigelse) {
+    private Record buildRecord(Bemyndigelse bemyndigelse) {
         RecordBuilder builder = new RecordBuilder(recordSpecification);
 
         builder.field("kode", bemyndigelse.getKode());
@@ -133,21 +130,21 @@ public class BemyndigelseParser implements Parser {
         builder.field("modificeret_dato", bemyndigelse.getModificeretDato());
         builder.field("gyldig_fra_dato", bemyndigelse.getGyldigFraDato());
         builder.field("gyldig_til_dato", bemyndigelse.getGyldigTilDato());
-        
+
         return builder.build();
     }
 
     private List<Bemyndigelser> unmarshallFile(File dataSet) {
         List<Bemyndigelser> bemyndigelsesList = new ArrayList<Bemyndigelser>();
-        
+
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Bemyndigelser.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             File[] input = null;
-            if(dataSet.isDirectory()) {
-                 input = dataSet.listFiles();
+            if (dataSet.isDirectory()) {
+                input = dataSet.listFiles();
             } else {
-                input = new File[] {dataSet};
+                input = new File[]{dataSet};
             }
 
             for (int i = 0; i < input.length; i++) {
@@ -161,22 +158,22 @@ public class BemyndigelseParser implements Parser {
     }
 
     private File checkRequiredFiles(File dataSet) {
-        
-       Preconditions.checkNotNull(dataSet);
-       
-       File[] input = null;
-       if(dataSet.isDirectory()) {
-            input = dataSet.listFiles();
-       } else {
-           input = new File[] {dataSet};
-       }
 
-       for (int i = 0; i < input.length; i++) {
-           String fileName = input[i].getName();
-           MDC.put("filename", fileName);
-       }
-       
-       return dataSet;
+        Preconditions.checkNotNull(dataSet);
+
+        File[] input = null;
+        if (dataSet.isDirectory()) {
+            input = dataSet.listFiles();
+        } else {
+            input = new File[]{dataSet};
+        }
+
+        for (int i = 0; i < input.length; i++) {
+            String fileName = input[i].getName();
+            MDC.put("filename", fileName);
+        }
+
+        return dataSet;
     }
 
     @Override

@@ -27,16 +27,26 @@
 package dk.nsi.sdm4.bemyndigelse.parser;
 
 import dk.nsi.sdm4.bemyndigelse.config.BemyndigelseApplicationConfig;
+import dk.nsi.sdm4.bemyndigelse.config.BemyndigelseInfrastructureConfig;
 import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelse;
 import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelser;
 import dk.nsi.sdm4.bemyndigelse.recordspecs.BemyndigelseRecordSpecs;
 import dk.nsi.sdm4.core.parser.ParserException;
+import dk.nsi.sdm4.core.persistence.recordpersister.RecordFetcher;
+import dk.nsi.sdm4.core.persistence.recordpersister.RecordPersister;
 import dk.nsi.sdm4.testutils.TestDbConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.joda.time.Instant;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,10 +66,26 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-@ContextConfiguration(classes = {BemyndigelseApplicationConfig.class, TestDbConfiguration.class})
+@ContextConfiguration(classes = {BemyndigelseApplicationConfig.class, TestDbConfiguration.class, BemyndigelseParserTest.TestConfiguration.class})
 public class BemyndigelseParserTest {
+
+    @Configuration
+    static public class TestConfiguration {
+        @Bean
+        public RecordPersister recordPersister() {
+            return new RecordPersister(Instant.now());
+        }
+
+        @Bean
+        public RecordFetcher recordFetcher() {
+            return new RecordFetcher(Instant.now());
+        }
+
+    }
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
     @Autowired
     private BemyndigelseParser parser;
 

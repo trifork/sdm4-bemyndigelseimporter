@@ -35,17 +35,17 @@ public final class BemyndigelseRecordSpecs
     protected BemyndigelseRecordSpecs() {}
     
     public static final RecordSpecification ENTRY_RECORD_SPEC = RecordSpecification.createSpecification("Bemyndigelse", "kode", 
-            field("kode", 100),
-            field("bemyndigende_cpr", 10),
-            field("bemyndigede_cpr", 10),
-            field("bemyndigede_cvr", 8),
-            field("system", 100),
-            field("arbejdsfunktion", 100),
-            field("rettighed", 100),
-            field("status", 100),
-            field("godkendelses_dato", 25),
-            field("oprettelses_dato", 25),
-            field("modificeret_dato", 25),
-            field("gyldig_fra_dato", 25),
-            field("gyldig_til_dato", 25));
+            field("kode", 100, false),
+            field("bemyndigende_cpr", 10, false),
+            field("bemyndigede_cpr", 10, false),
+            field("bemyndigede_cvr", 8, true),
+            field("system", 100, false),
+            field("arbejdsfunktion", 100, false),
+            field("rettighed", 100, false),
+            field("status", 100, false),
+            field("godkendelses_dato", 25, false),
+            field("oprettelses_dato", 25, false),
+            field("modificeret_dato", 25, false),
+            field("gyldig_fra_dato", 25, false),
+            field("gyldig_til_dato", 25, false));
 }
