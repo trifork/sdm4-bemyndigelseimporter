@@ -34,6 +34,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import dk.nsi.sdm4.core.persistence.recordpersister.*;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,6 @@ import dk.nsi.sdm4.bemyndigelse.model.Bemyndigelser;
 import dk.nsi.sdm4.bemyndigelse.recordspecs.BemyndigelseRecordSpecs;
 import dk.nsi.sdm4.core.parser.Parser;
 import dk.nsi.sdm4.core.parser.ParserException;
-import dk.nsi.sdm4.core.persistence.recordpersister.Record;
-import dk.nsi.sdm4.core.persistence.recordpersister.RecordBuilder;
-import dk.nsi.sdm4.core.persistence.recordpersister.RecordPersister;
-import dk.nsi.sdm4.core.persistence.recordpersister.RecordSpecification;
 import dk.sdsd.nsp.slalog.api.SLALogItem;
 import dk.sdsd.nsp.slalog.api.SLALogger;
 
@@ -62,6 +59,9 @@ public class BemyndigelseParser implements Parser {
     
     @Autowired
     private RecordPersister persister;
+
+    @Autowired
+    private RecordFetcher fetcher;
     
     
     public BemyndigelseParser() {
@@ -81,6 +81,8 @@ public class BemyndigelseParser implements Parser {
                 for(Bemyndigelse bemyndigelse: bemyndigelser.getBemyndigelseList()) {
                 	validateBemyndigelse(bemyndigelse);
                     Record record = buildRecord(bemyndigelse);
+
+                    updateCurrentRecordIfExists(bemyndigelse.getKode(), recordSpecification);
                     persister.persist(record, recordSpecification);
                 }
             }
@@ -95,7 +97,16 @@ public class BemyndigelseParser implements Parser {
         }
         
     }
-    
+
+    private void updateCurrentRecordIfExists(String key, RecordSpecification specification) {
+        RecordWithMetadata recordWithMetadata = fetcher.fetchCurrentWithMeta(key, specification);
+        if (recordWithMetadata != null) {
+            logger.debug("Existing record found for key '"+key+"' - setting ValidTo");
+            recordWithMetadata.setValidTo(persister.getTransactionTime());
+            persister.update(recordWithMetadata, specification);
+        }
+    }
+
     private void validateBemyndigelse(Bemyndigelse bemyndigelse) {
         Preconditions.checkNotNull(bemyndigelse.getKode(), "Bemyndigelse.kode cannot be null");
         Preconditions.checkNotNull(bemyndigelse.getBemyndigedeCPR(), "Bemyndigelse.bemyndigede_cpr cannot be null where kode = " + bemyndigelse.getKode());
