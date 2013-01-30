@@ -79,10 +79,10 @@ public class BemyndigelseParser implements Parser {
                     validateBemyndigelse(bemyndigelse);
                     Record record = buildRecord(bemyndigelse);
 
-                    updateCurrentRecordIfExists(bemyndigelse.getKode(), recordSpecification);
                     persister.persist(record, recordSpecification);
                 }
             }
+
             slaLogItem.setCallResultOk();
             slaLogItem.store();
         } catch (Exception e) {
@@ -95,12 +95,11 @@ public class BemyndigelseParser implements Parser {
 
     }
 
-    private void updateCurrentRecordIfExists(String key, RecordSpecification specification) {
-        RecordWithMetadata recordWithMetadata = recordFetcher.fetchCurrentWithMeta(key, specification);
+    private void updateExistingRecord(RecordWithMetadata recordWithMetadata) {
         if (recordWithMetadata != null) {
-            logger.debug("Existing record found for key '" + key + "' - setting ValidTo");
+            logger.debug("Updating existing record for key column '" + recordSpecification.getKeyColumn() + "' = '" + recordWithMetadata.getRecord().get(recordSpecification.getKeyColumn()) + "' - setting ValidTo");
             recordWithMetadata.setValidTo(persister.getTransactionTime());
-            persister.update(recordWithMetadata, specification);
+            persister.update(recordWithMetadata, recordSpecification);
         }
     }
 

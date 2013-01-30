@@ -34,6 +34,7 @@ import dk.nsi.sdm4.bemyndigelse.recordspecs.BemyndigelseRecordSpecs;
 import dk.nsi.sdm4.core.parser.ParserException;
 import dk.nsi.sdm4.core.persistence.recordpersister.RecordFetcher;
 import dk.nsi.sdm4.core.persistence.recordpersister.RecordPersister;
+import dk.nsi.sdm4.core.persistence.recordpersister.UpdateExistingRecordPersister;
 import dk.nsi.sdm4.testutils.TestDbConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.Instant;
@@ -49,6 +50,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -73,7 +76,8 @@ public class BemyndigelseParserTest {
     static public class TestConfiguration {
         @Bean
         public RecordPersister recordPersister() {
-            return new RecordPersister(Instant.now());
+            //return new RecordPersister(Instant.now());
+            return new UpdateExistingRecordPersister(Instant.now());
         }
 
         @Bean
@@ -130,6 +134,8 @@ public class BemyndigelseParserTest {
         assertEquals("3 bemyndigelser expected",3, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
 
+
+
     @Test
     public void testNSPSupport150() {
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/nspsupport150/20121130_140213497_v00001.bemyndigelse.xml"));
@@ -155,6 +161,19 @@ public class BemyndigelseParserTest {
         assertEquals(1, bemyndigelser.size());
         assertEquals("eca4d648-a7d6-41b7-bc8e-0ad01c42c780", bemyndigelser.get(0).getKode());
         assertEquals("1003244314", bemyndigelser.get(0).getBemyndigedeCPR());
+    }
+
+    @Test
+    @Rollback(value = false)
+    public void testNSP1674() {
+        File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/nsp1674/20120329_102310000_v1.bemyndigelse.xml"));
+
+        parser.process(file);
+        assertEquals("2 bemyndigelser expected",2, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
+
+        File update = FileUtils.toFile(getClass().getClassLoader().getResource("data/nsp1674/20120329_102310000_opdatering_v1.bemyndigelse.xml"));
+        parser.process(update);
+        assertEquals(3, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
 
     @Test

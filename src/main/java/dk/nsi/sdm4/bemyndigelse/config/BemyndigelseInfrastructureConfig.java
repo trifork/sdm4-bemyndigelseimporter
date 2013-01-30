@@ -27,10 +27,14 @@
 package dk.nsi.sdm4.bemyndigelse.config;
 
 import dk.nsi.sdm4.core.config.StamdataConfiguration;
+import dk.nsi.sdm4.core.persistence.recordpersister.RecordPersister;
+import dk.nsi.sdm4.core.persistence.recordpersister.UpdateExistingRecordPersister;
 import dk.sdsd.nsp.slalog.api.SLALogConfig;
 import dk.sdsd.nsp.slalog.api.SLALogger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -42,4 +46,10 @@ public class BemyndigelseInfrastructureConfig extends StamdataConfiguration {
 	public SLALogger slaLogger() {
 		return new SLALogConfig("Stamdata Bemyndigelse-importer", "bemyndigelseimporter").getSLALogger();
 	}
+
+    @Override
+    @Scope(value="thread", proxyMode= ScopedProxyMode.TARGET_CLASS)
+    public RecordPersister recordPersister() {
+        return new UpdateExistingRecordPersister();
+    }
 }
