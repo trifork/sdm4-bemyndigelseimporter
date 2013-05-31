@@ -120,7 +120,7 @@ public class BemyndigelseParserTest {
     public void testParseFile() {
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/bemyndigelse/valid/20120329_102310000_v1.bemyndigelse.xml"));
 
-        parser.process(file);
+        parser.process(file, "");
         
         assertEquals("2 bemyndigelser expected",2, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
@@ -129,7 +129,7 @@ public class BemyndigelseParserTest {
     public void testParseFiles() {
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/bemyndigelse/valid/"));
 
-        parser.process(file);
+        parser.process(file, "");
 
         assertEquals("3 bemyndigelser expected",3, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
@@ -140,7 +140,7 @@ public class BemyndigelseParserTest {
     public void testNSPSupport150() {
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/nspsupport150/20121130_140213497_v00001.bemyndigelse.xml"));
 
-        parser.process(file);
+        parser.process(file, "");
         
         assertEquals("10 bemyndigelser expected",10, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
         
@@ -168,11 +168,11 @@ public class BemyndigelseParserTest {
     public void testNSP1674() {
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/nsp1674/20120329_102310000_v1.bemyndigelse.xml"));
 
-        parser.process(file);
+        parser.process(file, "");
         assertEquals("2 bemyndigelser expected",2, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
 
         File update = FileUtils.toFile(getClass().getClassLoader().getResource("data/nsp1674/20120329_102310000_opdatering_v1.bemyndigelse.xml"));
-        parser.process(update);
+        parser.process(update, "");
         assertEquals(3, jdbcTemplate.queryForInt("SELECT Count(*) FROM " + BemyndigelseRecordSpecs.ENTRY_RECORD_SPEC.getTable()));
     }
 
@@ -181,7 +181,7 @@ public class BemyndigelseParserTest {
     	
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/invalidKode/"));
     	try {
-            parser.process(file);
+            parser.process(file, "");
     	} catch(ParserException e) {
     		NullPointerException ne = (NullPointerException)e.getCause();
     		assertEquals("Bemyndigelse.kode cannot be null", ne.getMessage());
@@ -193,7 +193,7 @@ public class BemyndigelseParserTest {
     	
         File file = FileUtils.toFile(getClass().getClassLoader().getResource("data/invalidArbejdsfunktion/"));
     	try {
-            parser.process(file);
+            parser.process(file, "");
     	} catch(ParserException e) {
     		NullPointerException ne = (NullPointerException)e.getCause();
     		assertEquals("Bemyndigelse.arbejdsfunktion cannot be null where kode = 1", ne.getMessage());

@@ -66,10 +66,15 @@ public class BemyndigelseParser implements Parser {
     }
 
     @Override
-    public void process(File dataSet) throws ParserException {
+    public void process(File dataSet, String identifier) throws ParserException {
 
-        SLALogItem slaLogItem = slaLogger.createLogItem("BemyndigelseParser", "dataSet");
+        SLALogItem slaLogItem = slaLogger.createLogItem(getHome()+".process", "SDM4."+getHome()+".process");
+        slaLogItem.setMessageId(identifier);
+        if (dataSet != null) {
+            slaLogItem.addCallParameter(Parser.SLA_INPUT_NAME, dataSet.getAbsolutePath());
+        }
         try {
+            long processed = 0;
             logger.debug("Starting Bemyndigelse parser");
             File files = checkRequiredFiles(dataSet);
 
@@ -78,11 +83,12 @@ public class BemyndigelseParser implements Parser {
                 for (Bemyndigelse bemyndigelse : bemyndigelser.getBemyndigelseList()) {
                     validateBemyndigelse(bemyndigelse);
                     Record record = buildRecord(bemyndigelse);
-
                     persister.persist(record, recordSpecification);
+
+                    processed++;
                 }
             }
-
+            slaLogItem.addCallParameter(Parser.SLA_RECORDS_PROCESSED_MAME, ""+processed);
             slaLogItem.setCallResultOk();
             slaLogItem.store();
         } catch (Exception e) {
@@ -133,25 +139,21 @@ public class BemyndigelseParser implements Parser {
         return builder.build();
     }
 
-    private List<Bemyndigelser> unmarshallFile(File dataSet) {
+    private List<Bemyndigelser> unmarshallFile(File dataSet) throws JAXBException {
         List<Bemyndigelser> bemyndigelsesList = new ArrayList<Bemyndigelser>();
 
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(Bemyndigelser.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            File[] input = null;
-            if (dataSet.isDirectory()) {
-                input = dataSet.listFiles();
-            } else {
-                input = new File[]{dataSet};
-            }
+        JAXBContext jaxbContext = JAXBContext.newInstance(Bemyndigelser.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        File[] input = null;
+        if (dataSet.isDirectory()) {
+            input = dataSet.listFiles();
+        } else {
+            input = new File[]{dataSet};
+        }
 
-            for (int i = 0; i < input.length; i++) {
-                Bemyndigelser bemyndigelser = (Bemyndigelser) jaxbUnmarshaller.unmarshal(input[i]);
-                bemyndigelsesList.add(bemyndigelser);
-            }
-        } catch (JAXBException e) {
-            logger.error("", e);
+        for (int i = 0; i < input.length; i++) {
+            Bemyndigelser bemyndigelser = (Bemyndigelser) jaxbUnmarshaller.unmarshal(input[i]);
+            bemyndigelsesList.add(bemyndigelser);
         }
         return bemyndigelsesList;
     }

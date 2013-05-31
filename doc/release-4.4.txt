@@ -1,6 +1,0 @@
-SDM4-Bemyndigelseimporter 4.4 Release Notes
-=============================
-
-* Fixed NSPSUPPORT-178 sdm4-bemyndigelseimporter får ikke 'lukket' eksisterende records
-    Importeren benytter ny version af sdm-core (4.4) som gør det muligt at hente- og opdatere metadata (ValidTo) for en
-    eksisterende record inden vi opretter en ny record.
